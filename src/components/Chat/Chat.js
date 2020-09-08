@@ -4,7 +4,6 @@ import {
     Text,
     AsyncStorage,
     TextInput,
-    // Button,
     FlatList,
     StyleSheet,
     Keyboard,
@@ -13,136 +12,163 @@ import {
 import socketIOClient from "socket.io-client";
 import axios from "axios";
 import Message from "./Message";
-import { Container, Header, Content, Item, Input, Button } from "native-base";
-import { max } from "moment";
+import Spinner from "react-native-loading-spinner-overlay";
+import {
+    Container,
+    Header,
+    Content,
+    Item,
+    Input,
+    Button,
+    Left,
+    Right,
+    Icon,
+    Body,
+} from "native-base";
+import { useIsFocused } from "@react-navigation/native";
 
 let socket;
-export default function Chat(props) {
-    const [username, setUsername] = useState("");
-    // const inputRef = useRef(null);
+export default function Chat({ navigation }) {
+    const [spinner, setSpinner] = useState(true);
     const boxRef = useRef(null);
-    const room = props.room;
-    const ENDPOINT = "https://sgbtech96-chat-server.herokuapp.com/";
-
     const [text, setText] = useState("");
-    const [messages, setMessages] = useState([]);
-    const [enb, setEnb] = useState(false);
+    let [messages, setMessages] = useState([]);
+    const [enable, setEnable] = useState(false);
+    const [creds, setCreds] = useState({
+        token: null,
+        roomId: null,
+        username: null,
+    });
 
-    useEffect(() => {
-        console.log("useEffect creds at Chat.js", username);
-        // fetching the username from Async Storage
-        const getUsername = async () => {
-            try {
-                const tmp = await AsyncStorage.getItem("phno");
-                setUsername(tmp);
-            } catch (e) {
-                console.log("error while getting phno :(");
+    const isFocused = useIsFocused();
+
+    const fetchChats = async () => {
+        if (!isFocused) return;
+        console.log("fetchChats");
+        setSpinner(true);
+        creds.token = await AsyncStorage.getItem("authToken");
+        creds.roomId = await AsyncStorage.getItem("roomId");
+        creds.username = await AsyncStorage.getItem("username");
+        console.log("await crossed");
+        const res = await axios.get(
+            `http://192.168.43.35:5000/chats/${creds.roomId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${creds.token}`,
+                },
             }
-        };
-        if (username == "") getUsername();
-    }, [username]);
+        );
+        // console.log(res.data);
+        if (res.data.error) {
+            console.log("hello1");
+            setSpinner(false);
+            return;
+        }
+        console.log("fetchChats", creds.roomId);
+        setMessages(res.data.chats);
+        setSpinner(false);
+    };
 
     useEffect(() => {
-        console.log("useEffect fetch at Chat.js", username);
-        //loading in the previous chats from the room
-        const fetch = async () => {
-            if (username == "") return;
-            try {
-                const { data } = await axios.get(
-                    `https://sgbtech96-chat-server.herokuapp.com/chats/${room}`
-                );
-                setMessages(data.chats);
-            } catch (e) {
-                console.log("error while fetching previous chats from db :(");
-            }
+        console.log(
+            "use effect in chat.js",
+            creds.token,
+            creds.roomId,
+            creds.username
+        );
+        fetchChats();
+        return () => {
+            creds.token = creds.roomId = creds.username = null;
         };
-        fetch();
-    }, [username]);
-
+    }, [isFocused]);
     useEffect(() => {
-        console.log("useEffect socket at Chat.js", username);
-        //setting up socket
-        socket = socketIOClient(ENDPOINT);
+        if (!isFocused) return;
+        if (!creds.token) return;
+        console.log("Joining Room", creds.roomId);
+        socket = socketIOClient("http://192.168.43.35:5000");
         socket.on("connect", () => {
-            if (username != "") socket.emit("join", { username, room });
+            socket.emit("join", {
+                username: creds.username,
+                room: creds.roomId,
+            });
         });
         socket.on("newMessage", (msg) => {
             setMessages((prev) => [...prev, msg]);
-            // setTimeout(() => {
-            //     inputRef.current.scrollToEnd({ animated: true, index: 0 });
-            // }, 1000);
         });
 
         return () => {
             socket.close();
         };
-    }, [username]);
+    }, [isFocused, creds.token]);
 
     const handleSend = () => {
-        setEnb(true);
+        setEnable(true);
         if (text.trim().length == 0) {
             setText("");
-            setEnb(false);
+            setEnable(false);
             return;
         }
         setText("");
-        socket.emit("createMessage", { text, username, room });
-        setEnb(false);
+        socket.emit("createMessage", {
+            text,
+            username: creds.username,
+            room: creds.roomId,
+        });
+        setEnable(false);
     };
 
     useEffect(() => {
+        if (!isFocused) return;
         Keyboard.addListener("keyboardDidShow", _keyboardDidShow);
-        Keyboard.addListener("keyboardDidHide", _keyboardDidHide);
-
-        // cleanup function
         return () => {
             Keyboard.removeListener("keyboardDidShow", _keyboardDidShow);
-            Keyboard.removeListener("keyboardDidHide", _keyboardDidHide);
         };
-    }, []);
+    }, [isFocused]);
 
     const _keyboardDidShow = () => {
         boxRef.current.scrollToEnd({ animated: true, duration: 100 });
-    };
-
-    const _keyboardDidHide = () => {
-        // setDisplay(9.2);
-        // setBox(0.8);
-    };
-    const handleBlur = (e) => {
-        console.warn("Enter");
-        if (e.keyCode === 40) {
-            e.target.blur();
-        }
     };
 
     const scrollToPosition = () => {
         boxRef.current.scrollToEnd({ animated: false, duration: 100 });
     };
 
-    return (
+    return creds.token === null ? (
+        <Spinner
+            visible={spinner}
+            textContent={"Fetching your chats..."}
+            // textStyle={styles.spinnerTextStyle}
+        />
+    ) : (
         <View style={styles.totalWrapper}>
+            <Header style={{ backgroundColor: "#410093" }}>
+                <Left>
+                    <Button
+                        transparent
+                        onPress={() => {
+                            navigation.toggleDrawer();
+                        }}
+                    >
+                        <Icon name="menu" />
+                    </Button>
+                </Left>
+                <Right>
+                    <Text
+                        style={{
+                            color: "#fff",
+                            fontWeight: "700",
+                        }}
+                    >
+                        {creds.roomId.replace(creds.username, "")}
+                    </Text>
+                </Right>
+            </Header>
             <View style={{ ...styles.displayMessages, flex: 9.4 }}>
-                {/* <FlatList
-                    style={{ display: "flex" }}
-                    data={messages}
-                    renderItem={({ item, index }) => <Message item={item} />}
-                    keyExtractor={(item) => item.createdAt.toString()}
-                    ref={inputRef}
-                    // onContentSizeChange={() => {
-                    //     inputRef.current.scrollToEnd({
-                    //         animated: false,
-                    //         index: 0,
-                    //     });
-                    // }}
-                    showsVerticalScrollIndicator={false}
-                    // initialScrollIndex={0} */}
-                {/* /> */}
                 <ScrollView ref={boxRef} onContentSizeChange={scrollToPosition}>
                     {messages.map((item) => (
                         <Message
                             item={item}
-                            user={username}
+                            user={creds.username}
                             key={
                                 item.createdAt.toString() +
                                 Math.random().toString()
@@ -159,37 +185,26 @@ export default function Chat(props) {
                             onChangeText={(val) => setText(val)}
                             style={{ width: "100%", height: "100%" }}
                             value={text}
-                            // onFocus={() => {
-                            //     setDisplay(6);
-                            //     setBox(1);
-                            // }}
-                            // onBlur={() => {
-                            //     setDisplay(9.2);
-                            //     setBox(0.8);
-                            // }}
                             multiline
-                            // onKeyPress={handleBlur}
                         />
                     </Item>
                 </View>
                 <View style={{ width: "25%", height: "100%" }}>
                     <Button
-                        // rounded
                         info
                         onPress={handleSend}
                         style={{
                             width: "100%",
                             height: "100%",
-                            backgroundColor: "#089000",
+                            backgroundColor: "#410093",
                         }}
-                        disabled={enb}
+                        disabled={enable}
                     >
                         <View
                             style={{
                                 display: "flex",
                                 justifyContent: "center",
                                 alignItems: "center",
-                                // backgroundColor: "#ddd",
                                 width: "100%",
                             }}
                         >
@@ -212,11 +227,9 @@ export default function Chat(props) {
 const styles = StyleSheet.create({
     totalWrapper: {
         flex: 1,
-        // backgroundColor: "#ddd",
     },
     displayMessages: {
         margin: 5,
-        // backgroundColor: "#ddd",
     },
     sendMessages: {
         display: "flex",

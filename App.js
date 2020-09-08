@@ -2,51 +2,133 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, AsyncStorage, Button } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import RootStackScreen from "./src/components/Auth/RootStackScreen";
+import { AuthContext } from "./src/components/Auth/AuthContext";
+import AllUsers from "./src/components/Auth/AllUsers";
+import Logout from "./src/components/Auth/Logout";
 import Chat from "./src/components/Chat/Chat";
-import SplashScreen from "./src/components/Auth/SplashScreen";
-
-const Wait = () => {
-    return <Text>Wait...</Text>;
-};
-
-const Home = ({ navigation }) => {
-    return (
-        <View>
-            <Text>HOME</Text>
-            <Button
-                title="Go to Chat"
-                onPress={() => navigation.navigate("Chat")}
-            />
-        </View>
-    );
-};
+import Spinner from "react-native-loading-spinner-overlay";
+import DrawerContent from "./src/components/Auth/DrawerContent";
 
 export default function App() {
-    const Stack = createStackNavigator();
-    const [flag, setFlag] = useState(0);
+    const [spinner, setSpinner] = useState(true);
+    const Drawer = createDrawerNavigator();
+    const initialLoginState = {
+        authToken: null,
+        username: null,
+    };
+    const loginReducer = (prevState, action) => {
+        switch (action.type) {
+            case "RETRIEVE_TOKEN":
+                return {
+                    ...prevState,
+                    authToken: action.authToken,
+                    username: action.username,
+                };
+            case "LOGIN":
+                return {
+                    ...prevState,
+                    authToken: action.authToken,
+                    username: action.username,
+                };
+            case "LOGOUT":
+                return {
+                    ...prevState,
+                    authToken: null,
+                    username: null,
+                };
+        }
+    };
+    const [loginState, dispatch] = React.useReducer(
+        loginReducer,
+        initialLoginState
+    );
+    const authContext = React.useMemo(
+        () => ({
+            signIn: async (authToken, username) => {
+                setSpinner(true);
+                try {
+                    await AsyncStorage.setItem("authToken", authToken);
+                    await AsyncStorage.setItem("username", username);
+                } catch (e) {
+                    console.log(e);
+                }
+                dispatch({ type: "LOGIN", username, authToken });
+                setSpinner(false);
+            },
+            signOut: async () => {
+                setSpinner(true);
+                try {
+                    await AsyncStorage.removeItem("authToken", null);
+                    await AsyncStorage.removeItem("username", null);
+                } catch (e) {
+                    console.log(e);
+                }
+                dispatch({ type: "LOGOUT" });
+                setSpinner(false);
+            },
+        }),
+        []
+    );
     useEffect(() => {
-        console.log("useEffect at App.js");
-        const setUsername = async () => {
-            await AsyncStorage.setItem("phno", "+91 9478121646");
-            setFlag(1);
-        };
-        setUsername();
+        setTimeout(async () => {
+            let userToken, userName;
+            userToken = userName = null;
+            try {
+                userToken = await AsyncStorage.getItem("authToken");
+                userName = await AsyncStorage.getItem("username");
+            } catch (e) {
+                console.log(e);
+            }
+            dispatch({
+                type: "RETRIEVE_TOKEN",
+                authToken: userToken,
+                username: userName,
+            });
+            setSpinner(false);
+        }, 1000);
     }, []);
-
-    return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="Home">
-                <Stack.Screen name="Home" component={Home} />
-                <Stack.Screen
-                    name="Chat"
-                    component={() => {
-                        if (flag) return <Chat room="avc" />;
-                        return <Wait />;
-                    }}
-                />
-            </Stack.Navigator>
-        </NavigationContainer>
+    return spinner ? (
+        <Spinner
+            visible={spinner}
+            textContent={"Just a sec..."}
+            // textStyle={styles.spinnerTextStyle}
+        />
+    ) : (
+        <AuthContext.Provider value={authContext}>
+            <NavigationContainer>
+                {loginState.authToken !== null ? (
+                    <Drawer.Navigator
+                        drawerContent={(props) => (
+                            <DrawerContent
+                                {...props}
+                                username={loginState.username}
+                            />
+                        )}
+                    >
+                        <Drawer.Screen
+                            name="AllUsers"
+                            component={AllUsers}
+                            // options={{
+                            //     title: "Users",
+                            //     gestureEnabled: false,
+                            // }}
+                        />
+                        <Drawer.Screen name="Chat" component={Chat} />
+                        <Drawer.Screen
+                            name="Logout"
+                            component={Logout}
+                            options={{
+                                title: "Sign Out",
+                            }}
+                        />
+                    </Drawer.Navigator>
+                ) : (
+                    <RootStackScreen />
+                )}
+            </NavigationContainer>
+        </AuthContext.Provider>
     );
 }
 
