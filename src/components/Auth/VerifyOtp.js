@@ -36,10 +36,13 @@ const VerifyOtp = ({ navigation }) => {
     const verifyOtp = async (values) => {
         setSpinner(true);
         const email = await AsyncStorage.getItem("email");
-        const res = await axios.post("http://192.168.43.35:8000/verifyOTPe", {
-            email,
-            otp: values.otp,
-        });
+        const res = await axios.post(
+            "https://sgbtech96-chit-auth-server.herokuapp.com/verifyOTPe",
+            {
+                email,
+                otp: values.otp,
+            }
+        );
         console.log(res.data);
         const { msg, error } = res.data;
         if (error) {

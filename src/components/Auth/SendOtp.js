@@ -31,7 +31,7 @@ const SendOtp = ({ navigation }) => {
     const [err, setErr] = useState("");
     const sendOtp = async (values) => {
         setSpinner(true);
-        const res = await axios.post("http://192.168.43.35:8000/sendOTPe", {
+        const res = await axios.post("https://sgbtech96-chit-auth-server.herokuapp.com/sendOTPe", {
             email: values.email,
         });
         console.log(res.data);

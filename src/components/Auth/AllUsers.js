@@ -33,11 +33,14 @@ const AllUsers = ({ navigation }) => {
         console.log("fetchUsers");
         setSpinner(true);
         token = await AsyncStorage.getItem("authToken");
-        const res = await axios.get("http://192.168.43.35:8000/allUsers", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const res = await axios.get(
+            "https://sgbtech96-chit-auth-server.herokuapp.com/allUsers",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         // console.log(res.data);
         myUsername = await AsyncStorage.getItem("username");
         // console.log(myUsername);
@@ -51,7 +54,7 @@ const AllUsers = ({ navigation }) => {
         console.log("handleClick");
         setSpinner(true);
         const res = await axios.post(
-            "http://192.168.43.35:5000/room",
+            "https://sgbtech96-chit-chat-server.herokuapp.com/room",
 
             {
                 us1: myUsername,

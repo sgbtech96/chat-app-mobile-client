@@ -1,7 +1,7 @@
 {
     "expo": {
-        "name": "mobile-client",
-        "slug": "mobile-client",
+        "name": "cHiT",
+        "slug": "cHiT",
         "version": "1.0.0",
         "orientation": "portrait",
         "icon": "./assets/icon.png",
@@ -21,7 +21,7 @@
             "favicon": "./assets/favicon.png"
         },
         "android": {
-            "package": "com.sgbtech96.mobileChatClient",
+            "package": "com.sgbtech96.cHiT",
             "versionCode": 1
         },
         "description": ""

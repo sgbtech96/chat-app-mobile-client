@@ -37,10 +37,13 @@ const Login = ({ navigation }) => {
     };
     const login = async ({ username, password }) => {
         setSpinner(true);
-        const res = await axios.post("http://192.168.43.35:8000/login", {
-            username,
-            password,
-        });
+        const res = await axios.post(
+            "https://sgbtech96-chit-auth-server.herokuapp.com/login",
+            {
+                username,
+                password,
+            }
+        );
         console.log(res.data);
         const { msg, error, token } = res.data;
         const userId = res.data.username;

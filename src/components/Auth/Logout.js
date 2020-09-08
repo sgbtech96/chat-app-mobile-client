@@ -9,11 +9,14 @@ const Logout = ({ navigation }) => {
     const { signOut } = useContext(AuthContext);
     const logout = async () => {
         const token = await AsyncStorage.getItem("authToken");
-        const res = await axios.get("http://192.168.43.35:8000/logout", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const res = await axios.get(
+            "https://sgbtech96-chit-auth-server.herokuapp.com/logout",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         console.log(res.data);
         signOut();
     };

@@ -36,7 +36,7 @@ const Register = ({ navigation }) => {
     const register = async ({ username, password, confirmPassword }) => {
         setSpinner(true);
         const email = await AsyncStorage.getItem("email");
-        const res = await axios.post("http://192.168.43.35:8000/register", {
+        const res = await axios.post("https://sgbtech96-chit-auth-server.herokuapp.com/register", {
             email,
             username,
             password,
@@ -258,14 +258,6 @@ const Register = ({ navigation }) => {
                                         Sign In
                                     </Text>
                                 </TouchableOpacity>
-                            </View>
-                            <View style={styles.errorBackend}>
-                                <Text
-                                    visible={err.length > 0}
-                                    style={styles.error}
-                                >
-                                    {err}
-                                </Text>
                             </View>
                         </ScrollView>
                     )}

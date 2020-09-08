@@ -51,7 +51,7 @@ export default function Chat({ navigation }) {
         creds.username = await AsyncStorage.getItem("username");
         console.log("await crossed");
         const res = await axios.get(
-            `http://192.168.43.35:5000/chats/${creds.roomId}`,
+            `https://sgbtech96-chit-chat-server.herokuapp.com/chats/${creds.roomId}`,
             {
                 headers: {
                     Authorization: `Bearer ${creds.token}`,
@@ -85,7 +85,9 @@ export default function Chat({ navigation }) {
         if (!isFocused) return;
         if (!creds.token) return;
         console.log("Joining Room", creds.roomId);
-        socket = socketIOClient("http://192.168.43.35:5000");
+        socket = socketIOClient(
+            "https://sgbtech96-chit-chat-server.herokuapp.com/"
+        );
         socket.on("connect", () => {
             socket.emit("join", {
                 username: creds.username,
