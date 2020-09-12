@@ -10,7 +10,9 @@ Your previous chats would not be lost, and yes the entire chat service is **behi
 4) Support of React **Navigation**, both **stack and drawer navigator**.
 5) **Chat personally** with any of the registered users.
 6) Previous **chats conserved**.
-7) Completely behind the **JWT auth**.
+7) **Global state** management.
+8) Completely behind the **JWT auth**.
+9) Built entirely using **React Hooks**.
 
 ### Technology Stack
 React Native, socket-io-client
