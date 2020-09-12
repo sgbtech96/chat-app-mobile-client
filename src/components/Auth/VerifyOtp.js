@@ -37,7 +37,7 @@ const VerifyOtp = ({ navigation }) => {
         setSpinner(true);
         const email = await AsyncStorage.getItem("email");
         const res = await axios.post(
-            "https://sgbtech96-chit-auth-server.herokuapp.com/verifyOTPe",
+            "https://sgbtech96-auth-chat-server.herokuapp.com/verifyOtp",
             {
                 email,
                 otp: values.otp,

@@ -36,12 +36,15 @@ const Register = ({ navigation }) => {
     const register = async ({ username, password, confirmPassword }) => {
         setSpinner(true);
         const email = await AsyncStorage.getItem("email");
-        const res = await axios.post("https://sgbtech96-chit-auth-server.herokuapp.com/register", {
-            email,
-            username,
-            password,
-            confirmPassword,
-        });
+        const res = await axios.post(
+            "https://sgbtech96-auth-chat-server.herokuapp.com/register",
+            {
+                email,
+                username,
+                password,
+                confirmPassword,
+            }
+        );
         console.log(res.data);
         const { msg, error } = res.data;
         if (error) {

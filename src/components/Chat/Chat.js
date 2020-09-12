@@ -51,7 +51,7 @@ export default function Chat({ navigation }) {
         creds.username = await AsyncStorage.getItem("username");
         console.log("await crossed");
         const res = await axios.get(
-            `https://sgbtech96-chit-chat-server.herokuapp.com/chats/${creds.roomId}`,
+            `https://sgbtech96-auth-chat-server.herokuapp.com/chats/${creds.roomId}`,
             {
                 headers: {
                     Authorization: `Bearer ${creds.token}`,
@@ -86,7 +86,7 @@ export default function Chat({ navigation }) {
         if (!creds.token) return;
         console.log("Joining Room", creds.roomId);
         socket = socketIOClient(
-            "https://sgbtech96-chit-chat-server.herokuapp.com/"
+            "https://sgbtech96-auth-chat-server.herokuapp.com/"
         );
         socket.on("connect", () => {
             socket.emit("join", {

@@ -34,7 +34,7 @@ const AllUsers = ({ navigation }) => {
         setSpinner(true);
         token = await AsyncStorage.getItem("authToken");
         const res = await axios.get(
-            "https://sgbtech96-chit-auth-server.herokuapp.com/allUsers",
+            "https://sgbtech96-auth-chat-server.herokuapp.com/allUsers",
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -54,7 +54,7 @@ const AllUsers = ({ navigation }) => {
         console.log("handleClick");
         setSpinner(true);
         const res = await axios.post(
-            "https://sgbtech96-chit-chat-server.herokuapp.com/room",
+            "https://sgbtech96-auth-chat-server.herokuapp.com/room",
 
             {
                 us1: myUsername,

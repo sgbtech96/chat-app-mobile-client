@@ -38,7 +38,7 @@ const Login = ({ navigation }) => {
     const login = async ({ username, password }) => {
         setSpinner(true);
         const res = await axios.post(
-            "https://sgbtech96-chit-auth-server.herokuapp.com/login",
+            "https://sgbtech96-auth-chat-server.herokuapp.com/login",
             {
                 username,
                 password,

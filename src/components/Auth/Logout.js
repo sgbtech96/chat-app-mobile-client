@@ -10,7 +10,7 @@ const Logout = ({ navigation }) => {
     const logout = async () => {
         const token = await AsyncStorage.getItem("authToken");
         const res = await axios.get(
-            "https://sgbtech96-chit-auth-server.herokuapp.com/logout",
+            "https://sgbtech96-auth-chat-server.herokuapp.com/logout",
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
